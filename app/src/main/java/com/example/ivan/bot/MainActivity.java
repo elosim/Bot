@@ -47,21 +47,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-//        Intent intent = new Intent();
-//        intent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-//        startActivityForResult(intent, CTE);
 
-
-        ttobj=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    ttobj.setLanguage(Locale.UK);
-                }
-            }
-        });
-        ttobj.setLanguage(new Locale("es", "ES"));
-
+        ttobj  = new TextToSpeech(this,this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -74,56 +61,6 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     }
 
-    public void aniadir(String list, boolean wh){
-        lista.add(list);
-        who.add(wh);
-        adp = new Adaptador(this, lista,who);
-        lv.setAdapter(adp);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CTE) {
-            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
-                if(lista.get(0).compareTo("-")==0){
-                    lista.remove(0);
-                    who.remove(0);
-                }
-
-                lista.add(data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0));
-                who.add(false);
-                adp = new Adaptador(this,lista,who);
-                lv.setAdapter(adp);
-            } else {
-                Log.v("añ", data.getStringArrayListExtra(
-                        RecognizerIntent.EXTRA_RESULTS).toString());
-                lista.add(data.getStringArrayListExtra(
-                        RecognizerIntent.EXTRA_RESULTS).get(0));
-                who.add(false);
-
-
-                adp = new Adaptador(this,lista,who);
-                lv.setAdapter(adp);
-
-                Enviar(data.getStringArrayListExtra(
-                        RecognizerIntent.EXTRA_RESULTS).get(0));
-
-//                Intent intent = new Intent();
-//                intent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-//                startActivity(intent);
-            }
-        }
-
-    }
-
-    public void Enviar(String aux) {
-        Hebra a = new Hebra();
-        a.execute(aux);
-    }
-    public void comprobar(){
-
-    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -153,6 +90,61 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
         super.onPause();
     }
+
+
+    public void aniadir(String list, boolean wh){
+        lista.add(list);
+        who.add(wh);
+        adp = new Adaptador(this, lista,who);
+        lv.setAdapter(adp);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CTE) {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                if(lista.get(0).compareTo("-")==0){
+                    lista.remove(0);
+                    who.remove(0);
+                }
+
+                lista.add(data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0));
+                who.add(false);
+                adp = new Adaptador(this,lista,who);
+                lv.setAdapter(adp);
+
+            } else {
+
+                if(lista.get(0).compareTo("-")==0){
+                    lista.remove(0);
+                    who.remove(0);
+                }
+
+                Log.v("añ", data.getStringArrayListExtra(
+                        RecognizerIntent.EXTRA_RESULTS).toString());
+
+                lista.add(data.getStringArrayListExtra(
+                        RecognizerIntent.EXTRA_RESULTS).get(0));
+
+                who.add(false);
+
+                adp = new Adaptador(this,lista,who);
+                lv.setAdapter(adp);
+
+                Enviar(data.getStringArrayListExtra(
+                        RecognizerIntent.EXTRA_RESULTS).get(0));
+
+            }
+        }
+
+    }
+
+    public void Enviar(String aux) {
+        Hebra a = new Hebra();
+        a.execute(aux);
+    }
+
     public void escuchar(){
         Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "es-ES");
@@ -164,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
@@ -175,20 +168,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Log.e("TTS", "This Language is not supported");
             } else {
 
-                ttobj.setLanguage(new Locale("es", "ES"));
-                ttobj.setLanguage(Locale.getDefault());
-                ttobj.isLanguageAvailable(Locale.US);
-                ttobj.isLanguageAvailable(new Locale("spa", "ESP"));
-                //tts.setPitch(50); //tono
-                //tts.setSpeechRate(200); //velocidad
-                ttobj.speak(lista.get(lista.size()-1), TextToSpeech.QUEUE_FLUSH, null, null); //api 21
-                ttobj.speak(lista.get(lista.size()-1), TextToSpeech.QUEUE_FLUSH, null);
-                //TextToSpeech.QUEUE_FLUSH
-                //TextToSpeech.QUEUE_ADD
             }
 
         } else {
-            Log.e("TTS", "Initilization Failed!");
+
         }
     }
 
@@ -207,17 +190,14 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     e.printStackTrace();
                 }
 
-
-                ttobj.setLanguage(new Locale("es", "ES"));
-                ttobj.setLanguage(Locale.getDefault());
-                ttobj.isLanguageAvailable(Locale.US);
-                ttobj.isLanguageAvailable(new Locale("spa", "ESP"));
-                //tts.setPitch(50); //tono
-                //tts.setSpeechRate(200); //velocidad
-                ttobj.speak(s, TextToSpeech.QUEUE_FLUSH, null, null); //api 21
-                ttobj.speak(s, TextToSpeech.QUEUE_FLUSH, null);
-                //TextToSpeech.QUEUE_FLUSH
-                //TextToSpeech.QUEUE_ADD
+            ttobj.setLanguage(new Locale("es", "ES"));
+            ttobj.setLanguage(Locale.getDefault());
+            ttobj.isLanguageAvailable(Locale.US);
+            ttobj.isLanguageAvailable(new Locale("spa", "ESP"));
+            //tts.setPitch(50); //tono
+            //tts.setSpeechRate(200); //velocidad
+            ttobj.speak(s, TextToSpeech.QUEUE_FLUSH, null, null); //api 21
+            ttobj.speak(s, TextToSpeech.QUEUE_FLUSH, null);
 
             return null;
         }
@@ -226,14 +206,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         @Override
         protected void onPostExecute(String result) {
             aniadir(s, true);
-
         }
 
         @Override
         protected void onPreExecute() {
 
             factory = new ChatterBotFactory();
-
 
             try {
                 bot1 = factory.create(ChatterBotType.CLEVERBOT);
@@ -242,10 +220,6 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
 
             bot1session = bot1.createSession();
-
-
-
-
 
         }
 
